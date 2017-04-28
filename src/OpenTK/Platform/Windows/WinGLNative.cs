@@ -227,6 +227,11 @@ namespace OpenTK.Platform.Windows
 
         void setFocus(bool focus)
         {
+            if (focus && !(Functions.GetForegroundWindow() == window?.Handle))
+            {
+                focus = false;
+            }
+
             if (focus == focused) return;
 
             focused = focus;
@@ -262,7 +267,7 @@ namespace OpenTK.Platform.Windows
             // This is a work-around for the window not having a correct value for focused if the window is
             // denied focus during startup procedures. On looking into all window events during startup,
             // it looks like windows is incorrectly sending ACTIVATE / ACTIVATEAPP WindowProcedures. 
-            setFocus(Functions.GetForegroundWindow() == window?.Handle);
+            // setFocus(Functions.GetForegroundWindow() == window?.Handle);
 
             unsafe
             {
@@ -632,12 +637,7 @@ namespace OpenTK.Platform.Windows
                 }
             }
         }
-
-        void HandleKillFocus(IntPtr handle, WindowMessage message, IntPtr wParam, IntPtr lParam)
-        {
-            setFocus(false);
-        }
-
+        
         void HandleCreate(IntPtr handle, WindowMessage message, IntPtr wParam, IntPtr lParam)
         {
             CreateStruct cs = (CreateStruct)Marshal.PtrToStructure(lParam, typeof(CreateStruct));
@@ -796,10 +796,6 @@ namespace OpenTK.Platform.Windows
 
                 case WindowMessage.SYSCHAR:
                     return IntPtr.Zero;
-
-                case WindowMessage.KILLFOCUS:
-                    HandleKillFocus(handle, message, wParam, lParam);
-                    break;
 
                 #endregion
 
